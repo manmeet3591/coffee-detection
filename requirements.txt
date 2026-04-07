@@ -1,0 +1,6 @@
+earthengine-api
+geemap
+ipywidgets
+folium
+ipykernel
+pandas
