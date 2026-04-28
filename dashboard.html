@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperspectral Monitor | Dashboard</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .container {
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .status-tag {
+            background: #27ae60;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hyperspectral Coffee & Cocoa Monitoring System</h1>
+        <div class="status-tag">Live Analytics</div>
+    </div>
+    <div class="container">
+        <!-- REPLACE 'your-username' with your actual Hugging Face username -->
+        <iframe 
+            src="https://huggingface.co/embed/manmeet3591/hyperspectral-coffee-monitor/+" 
+            allow="geolocation; microphone; camera; midi; encrypted-media;"
+        ></iframe>
+    </div>
+</body>
+</html>
