@@ -190,11 +190,15 @@ class HyperspectralMonitorApp:
         self.btn_apply_filters.on_click(self.on_apply_filters)
         self.btn_reset_filters.on_click(self.on_reset_filters)
 
+        self.stats_panel = widgets.HTML(value="<div style='border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'><i>Statistics will appear after assessing health.</i></div>")
+
         step4_box = widgets.VBox([
             widgets.HTML("<p>Calculate discrete plot boundaries from the crop map and assess their health based on spatial indices.</p>"),
             self.btn_make_plots,
             widgets.HBox([self.crop_filter, self.health_filter]),
-            widgets.HBox([self.btn_apply_filters, self.btn_reset_filters])
+            widgets.HBox([self.btn_apply_filters, self.btn_reset_filters]),
+            widgets.HTML("<br/><b>Live Statistics Dashboard:</b>"),
+            self.stats_panel
         ])
 
         # Step 5: Export Results
@@ -477,6 +481,44 @@ class HyperspectralMonitorApp:
         healthy  = fc.filter(ee.Filter.eq("health", 2)).map(lambda f: f.set({"style": {"color":"#1a9641","fillColor":"#1a9641","width":2,"fillOpacity":0.5}}))
         return stressed.merge(moderate).merge(healthy)
 
+    def _update_stats_dashboard(self, fc):
+        # Calculate statistics from the filtered FeatureCollection
+        try:
+            total_plots = fc.size().getInfo()
+            if total_plots == 0:
+                self.stats_panel.value = "<div style='border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9; color: #721c24;'>No plots match the selected filters.</div>"
+                return
+
+            total_area = fc.aggregate_sum("area_ha").getInfo()
+            
+            # Count by crop and health
+            coffee_count = fc.filter(ee.Filter.eq("crop", "coffee")).size().getInfo()
+            cocoa_count = fc.filter(ee.Filter.eq("crop", "cocoa")).size().getInfo()
+            
+            healthy_area = fc.filter(ee.Filter.eq("health", 2)).aggregate_sum("area_ha").getInfo()
+            moderate_area = fc.filter(ee.Filter.eq("health", 1)).aggregate_sum("area_ha").getInfo()
+            stressed_area = fc.filter(ee.Filter.eq("health", 0)).aggregate_sum("area_ha").getInfo()
+
+            # Create a simple HTML table for the dashboard
+            html = f"""
+            <div style='border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9; font-family: Arial, sans-serif;'>
+                <table style='width: 100%; border-collapse: collapse;'>
+                    <tr><td style='padding: 4px;'><b>Total Plots:</b></td><td style='padding: 4px; text-align: right;'>{total_plots}</td></tr>
+                    <tr><td style='padding: 4px;'><b>Total Area:</b></td><td style='padding: 4px; text-align: right;'>{total_area:.2f} ha</td></tr>
+                    <tr style='border-top: 1px solid #ddd;'><td colspan='2' style='padding: 4px;'><b>By Crop:</b></td></tr>
+                    <tr><td style='padding: 4px;'>&nbsp;&nbsp;Coffee Plots:</td><td style='padding: 4px; text-align: right;'>{coffee_count}</td></tr>
+                    <tr><td style='padding: 4px;'>&nbsp;&nbsp;Cocoa Plots:</td><td style='padding: 4px; text-align: right;'>{cocoa_count}</td></tr>
+                    <tr style='border-top: 1px solid #ddd;'><td colspan='2' style='padding: 4px;'><b>By Health Area:</b></td></tr>
+                    <tr><td style='padding: 4px;'>&nbsp;&nbsp;<span style='color: #1a9641;'>Healthy</span> Area:</td><td style='padding: 4px; text-align: right;'>{healthy_area:.2f} ha</td></tr>
+                    <tr><td style='padding: 4px;'>&nbsp;&nbsp;<span style='color: #d7191c;'>Stressed</span> Area:</td><td style='padding: 4px; text-align: right;'>{stressed_area:.2f} ha</td></tr>
+                    <tr><td style='padding: 4px;'>&nbsp;&nbsp;<span style='color: #fdae61;'>Moderate</span> Area:</td><td style='padding: 4px; text-align: right;'>{moderate_area:.2f} ha</td></tr>
+                </table>
+            </div>
+            """
+            self.stats_panel.value = html
+        except Exception as e:
+            self.stats_panel.value = f"<div style='border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9; color: #b71c1c;'>Error calculating stats: {str(e)}</div>"
+
     def on_apply_filters(self, _):
         if self.state["plots_fc"] is None:
             self.set_status("Please build plot polygons first.", "error")
@@ -511,7 +553,10 @@ class HyperspectralMonitorApp:
         self._remove_layer_if_exists(self.state["last_plot_layer"])
         self.state["last_plot_layer"] = self.m.addLayer(fc_styled.style(styleProperty="style"), {}, "Plots (Filtered Health)", True)
 
-        self.set_status("Filters applied to map.", "info")
+        # Update Statistics Dashboard
+        self._update_stats_dashboard(fc)
+
+        self.set_status("Filters applied to map and dashboard updated.", "info")
         
     def on_reset_filters(self, _):
         self.crop_filter.value = ("coffee", "cocoa")
@@ -546,6 +591,7 @@ class HyperspectralMonitorApp:
         
         # Reset UI elements
         self.accordion.selected_index = 0
+        self.stats_panel.value = "<div style='border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'><i>Statistics will appear after assessing health.</i></div>"
         self.set_status("Application reset to initial state. Start by selecting an AOI.", "info")
 
 # Initialize and display the application
