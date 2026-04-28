@@ -14,6 +14,9 @@ import geemap
 import ipywidgets as widgets
 from IPython.display import display
 import traceback
+import os
+import json
+from google.oauth2 import service_account
 
 class HyperspectralMonitorApp:
     def __init__(self, project_id="the-program-488501-i5"):
@@ -54,11 +57,24 @@ class HyperspectralMonitorApp:
 
     def _init_ee(self):
         try:
-            ee.Initialize(project=self.project_id)
-        except Exception:
-            ee.Authenticate()
-            ee.Initialize(project=self.project_id)
-        print("Earth Engine initialized with project:", self.project_id)
+            # Check for Service Account credentials in environment (for cloud deployment)
+            service_account_json = os.environ.get("EE_SERVICE_ACCOUNT_JSON")
+            if service_account_json:
+                print("Found Service Account credentials. Authenticating...")
+                info = json.loads(service_account_json)
+                credentials = service_account.Credentials.from_service_account_info(info)
+                ee.Initialize(credentials=credentials, project=self.project_id)
+            else:
+                # Local interactive authentication
+                try:
+                    ee.Initialize(project=self.project_id)
+                except Exception:
+                    ee.Authenticate()
+                    ee.Initialize(project=self.project_id)
+            print("Earth Engine initialized with project:", self.project_id)
+        except Exception as e:
+            print(f"Failed to initialize Earth Engine: {e}")
+            traceback.print_exc()
 
     # ---------------------------------------------------------
     # Helper Methods
