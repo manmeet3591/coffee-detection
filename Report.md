@@ -1,4 +1,4 @@
-# UI and UX Enhancement Report: Hyperspectral Coffee and Cocoa Monitoring App
+# UI and UX Enhancement Report: Coffee and Cocoa Detection System
 
 ## 1. Overview of UI and UX Changes
 The application has been transformed from a linear script into a robust, object-oriented web application structure (`HyperspectralMonitorApp`). Key changes include:
