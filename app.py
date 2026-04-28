@@ -617,3 +617,4 @@ if __name__ == '__main__':
     
     app = HyperspectralMonitorApp(project_id=MY_PROJECT_ID)
     app.display()
+\n# For Solara deployment\nPage = app.ui
