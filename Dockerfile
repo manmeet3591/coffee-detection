@@ -19,4 +19,4 @@ EXPOSE 7860
 
 # Command to run the application using Voila
 # We use --port 7860 as it's the default for Hugging Face Spaces
-CMD ["voila", "Manmeet_ Task.py", "--port", "7860", "--no-browser", "--Voila.ip", "0.0.0.0"]
+CMD ["voila", "app.py", "--port", "7860", "--no-browser", "--Voila.ip", "0.0.0.0", "--Voila.token=", "--Voila.password=", "--base_url=/embed/manmeet3591/coffee-detection/"]
